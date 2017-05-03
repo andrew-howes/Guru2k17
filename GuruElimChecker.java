@@ -116,10 +116,10 @@ public class GuruElimChecker {
 	
 	public static void checkPlayer()
 	{
-		scenarioResults = new String[127];
+		scenarioResults = new String[35];
 		ArrayList<Integer> differences = new ArrayList<Integer>();
 		//set scenarioResults to current result or player's bracket when not impossible
-		for(int i=0; i < 127; i++)
+		for(int i=0; i < 35; i++)
 		{
 			if(i < nextMatch){
 				scenarioResults[i] = results[i];
@@ -242,24 +242,18 @@ public class GuruElimChecker {
 		String[] result;
 		int start;
 		ArrayList<String> temp = new ArrayList<String>();
-		if(match < 96)
+		if(match < 28)
 		{
-			start = (match-64)*2;
-		}else if(match < 112)
+			start = (match-20)*2+4;
+		}else if(match < 32)
 		{
-			start = (match-96)*2+64;
-		}else if(match < 120)
+			start = (match-28)*2+20;
+		}else if(match < 34)
 		{
-			start = (match-112)*2+96;
-		}else if(match < 124)
-		{
-			start = (match-120)*2+112;
-		}else if(match < 126)
-		{
-			start = (match-124)*2+120;
+			start = (match-32)*2+28;
 		}else
 		{
-			start = 124;
+			start = 32;
 		}
 		for(int i = start; i < start+2; i++)
 		{
@@ -278,24 +272,18 @@ public class GuruElimChecker {
 		if(!possibleResults[match][0].equals(""))
 			return possibleResults[match];
 		ArrayList<String> temp = new ArrayList<String>();
-		if(match < 96)
+		if(match < 28)
 		{
-			start = (match-64)*2;
-		}else if(match < 112)
+			start = (match-20)*2+4;
+		}else if(match < 32)
 		{
-			start = (match-96)*2+64;
-		}else if(match < 120)
+			start = (match-28)*2+20;
+		}else if(match < 34)
 		{
-			start = (match-112)*2+96;
-		}else if(match < 124)
-		{
-			start = (match-120)*2+112;
-		}else if(match < 126)
-		{
-			start = (match-124)*2+120;
+			start = (match-32)*2+28;
 		}else
 		{
-			start = 124;
+			start = 32;
 		}
 		for(int i = start; i < start+2; i++)
 		{
@@ -316,23 +304,19 @@ public class GuruElimChecker {
 	
 	public static void populateValues()
 	{
-		values = new int[127];
-		for(int i = 0; i < 127; i++)
+		values = new int[35];
+		for(int i = 0; i < 35; i++)
 		{
-			if(i < 64)
+			if(i < 20)
 				values[i] = 1;
-			else if (i < 96)
+			else if (i < 28)
 				values[i] = 2;
-			else if (i < 112)
+			else if (i < 32)
 				values[i] = 4;
-			else if (i < 120)
+			else if (i < 34)
 				values[i] = 8;
-			else if (i < 124)
+			else 
 				values[i] = 16;
-			else if (i < 126)
-				values[i] = 32;
-			else
-				values[i] = 64;
 		}
 	}
 	
@@ -343,7 +327,7 @@ public class GuruElimChecker {
 
 	public static boolean isValid(String pick, int matchNum)
 	{
-		if(matchNum < 64)
+		if(matchNum < 20)
 		{
 			if(matchNum < nextMatch)
 			{
@@ -356,51 +340,37 @@ public class GuruElimChecker {
 					return true;
 			}
 			return false;
-		}else if(matchNum < 96)
+		}else if(matchNum < 28)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-64)*2) ||
-						isValid(pick, (matchNum-64)*2+1);
+				return isValid(pick, (matchNum-20)*2+4) ||
+						isValid(pick, (matchNum-20)*2+5);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 112)
+		}else if(matchNum < 32)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-96)*2+64) ||
-						isValid(pick, (matchNum-96)*2+65);
+				return isValid(pick, (matchNum-28)*2+20) ||
+						isValid(pick, (matchNum-28)*2+21);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 120)
+		}else if(matchNum < 34)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-112)*2+96) ||
-						isValid(pick, (matchNum-112)*2+97);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 124)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-120)*2+112) ||
-						isValid(pick, (matchNum-120)*2+113);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 126)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-124)*2+120) ||
-						isValid(pick, (matchNum-124)*2+121);
+				return isValid(pick, (matchNum-32)*2+28) ||
+						isValid(pick, (matchNum-32)*2+29);
 			else
 				return possibleResults[matchNum][0].equals(pick);
 		}else
 		{
-			return isValid(pick, 124)||isValid(pick,125);
+			return isValid(pick, 33)||isValid(pick,32);
 		}
 	}
 	
 	
 	public static boolean isPlayerPickValid(String pick, int matchNum)
 	{
-		if(matchNum < 64)
+		if(matchNum < 20)
 		{
 			if(matchNum < nextMatch)
 			{
@@ -409,53 +379,39 @@ public class GuruElimChecker {
 				return scenarioResults[matchNum].equals(pick);
 			}
 
-		}else if(matchNum < 96)
+		}else if(matchNum < 28)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isPlayerPickValid(pick, (matchNum-64)*2) ||
-						isPlayerPickValid(pick, (matchNum-64)*2+1);
+				return isPlayerPickValid(pick, (matchNum-20)*2+4) ||
+						isPlayerPickValid(pick, (matchNum-20)*2+5);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 112)
+		}else if(matchNum < 32)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isPlayerPickValid(pick, (matchNum-96)*2+64) ||
-						isPlayerPickValid(pick, (matchNum-96)*2+65);
+				return isPlayerPickValid(pick, (matchNum-28)*2+20) ||
+						isPlayerPickValid(pick, (matchNum-28)*2+21);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 120)
+		}else if(matchNum < 34)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isPlayerPickValid(pick, (matchNum-112)*2+96) ||
-						isPlayerPickValid(pick, (matchNum-112)*2+97);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 124)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isPlayerPickValid(pick, (matchNum-120)*2+112) ||
-						isPlayerPickValid(pick, (matchNum-120)*2+113);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 126)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isPlayerPickValid(pick, (matchNum-124)*2+120) ||
-						isPlayerPickValid(pick, (matchNum-124)*2+121);
+				return isPlayerPickValid(pick, (matchNum-32)*2+28) ||
+						isPlayerPickValid(pick, (matchNum-32)*2+29);
 			else
 				return possibleResults[matchNum][0].equals(pick);
 		}else
 		{
-			return isPlayerPickValid(pick, 124)||isPlayerPickValid(pick,125);
+			return isPlayerPickValid(pick, 32)||isPlayerPickValid(pick,33);
 		}
 	}
 
 	
 	public static void processPossibleResults(String[] possible)
 	{
-		possibleResults = new String[127][0];
+		possibleResults = new String[35][0];
 		String[] parts;
-		for(int i = 0; i < 127; i++)
+		for(int i = 0; i < 35; i++)
 		{
 			parts = possible[i+1].split("; ");
 			possibleResults[i] = parts;
@@ -464,7 +420,7 @@ public class GuruElimChecker {
 	
 	public static void processResults(String[] picks)
 	{
-		results = new String[127];
+		results = new String[35];
 		for(int i = 1; i < picks.length; i++)
 		{
 			results[i-1] = picks[i];

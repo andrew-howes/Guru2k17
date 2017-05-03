@@ -18,12 +18,14 @@ public class Guru {
 	static File neighbors; 
 	static int nextMatch;
 	
+	//main execution thread - initializes list of brackets, starts output. 
 	public static void main(String[] args) {
 		populateValues();
 		nextMatch = 0;
 		allPicks = new ArrayList<String[]>();
 		try {
-	        File inFile = new File(args[0]);
+			//changed default bracket file to allbrackets.txt
+	        File inFile = new File("allbrackets.txt");
 	        
 	        neighbors = new File("neighbors.txt");
 	        
@@ -33,10 +35,12 @@ public class Guru {
 	        int count = 0;
 	        while ((line = in.readLine()) != null) {
 	            String[] picks = line.split(", ", -1);
+	            //master results bracket
 	            if(picks[0].equals("ACTUAL"))
 	            {
 	            	processResults(picks);
-	            }else if(picks[0].equals("POSSIBLE"))
+	            }//possible results bracket - only really matters for round 1.
+	            else if(picks[0].equals("POSSIBLE"))
 	            {
 	            	processPossibleResults(picks);
 	            }else{
@@ -54,14 +58,17 @@ public class Guru {
 		scores = calculateScores(results);
 		System.out.println("Current Match: " + nextMatch + " Remaining Brackets: " + entrants.length);
 		outputClosestBrackets();
-		if(args.length <= 1)
+		
+		//How many matches to check - default is 1
+		if(args.length <= 0)
 			checkNext(1,"");
 		else
-			checkNext(Integer.parseInt(args[1]),"");
+			checkNext(Integer.parseInt(args[0]),"");
 		
-		calculateScenarios("");
+		//calculateScenarios("");
 	}
 	
+	//simulates the next 'i' matches to find eliminations
 	public static void checkNext(int i, String filename)
 	{
 		String[] possibles = getPossibles(nextMatch);
@@ -87,6 +94,8 @@ public class Guru {
 		
 	}
 	
+	//calculates the winners for the remaining matches.
+	//when simulating multiple matches at once, *scene* will contain a plus-delimited list of simulated winners to this point.
 	public static void calculateScenarios(String scene)
 	{
 		String[] possibles = getPossibles(nextMatch);
@@ -96,7 +105,8 @@ public class Guru {
 			possibleResults[nextMatch][0] = poss;
 			results[nextMatch] = poss;
 			scores = calculateScores(results);
-			if(nextMatch == 126)
+			//if the current match is the final, print the winner(s), else continue to iterate.
+			if(nextMatch == 34)
 			{
 				String newScene = scene+poss;
 				outputWinner(newScene);
@@ -110,6 +120,7 @@ public class Guru {
 		possibleResults[nextMatch] = possibles;
 	}
 	
+	//outputs the winner(s) for a given scenario.
 	public static void outputWinner(String scene)
 	{
 		int maxscore = scores[0];
@@ -127,32 +138,30 @@ public class Guru {
 		System.out.println();
 	}
 	
-	
+	//gets the list of possible winners for a given match
+	//assumes that the previous matches have been played or simulated at this point. 
 	public static String[] getPossibles(int match)
 	{
 		String[] result;
 		int start;
-//		if(!possibleResults[match][0].equals(""))
-//			return possibleResults[match];
+		
+		//if this is in the playins/first round, take the possible results directly from the possible results bracket.
+		if(!possibleResults[match][0].equals(""))
+			return possibleResults[match];
 		ArrayList<String> temp = new ArrayList<String>();
-		if(match < 96)
+		//for matches 21-28 (zero-indexed)
+		if(match < 28)
 		{
-			start = (match-64)*2;
-		}else if(match < 112)
+			start = (match-20)*2+4;
+		}else if(match < 32)
 		{
-			start = (match-96)*2+64;
-		}else if(match < 120)
+			start = (match-28)*2+20;
+		}else if(match < 34)
 		{
-			start = (match-112)*2+96;
-		}else if(match < 124)
-		{
-			start = (match-120)*2+112;
-		}else if(match < 126)
-		{
-			start = (match-124)*2+120;
+			start = (match-32)*2+28;
 		}else
 		{
-			start = 124;
+			start = 32;
 		}
 		for(int i = start; i < start+2; i++)
 		{
@@ -171,28 +180,26 @@ public class Guru {
 		return result;
 	}
 	
+	//create the list of point values for a given match number.
 	public static void populateValues()
 	{
-		values = new int[127];
-		for(int i = 0; i < 127; i++)
+		values = new int[35];
+		for(int i = 0; i < 35; i++)
 		{
-			if(i < 64)
+			if(i < 20)
 				values[i] = 1;
-			else if (i < 96)
+			else if (i < 28)
 				values[i] = 2;
-			else if (i < 112)
+			else if (i < 32)
 				values[i] = 4;
-			else if (i < 120)
+			else if (i < 34)
 				values[i] = 8;
-			else if (i < 124)
+			else 
 				values[i] = 16;
-			else if (i < 126)
-				values[i] = 32;
-			else
-				values[i] = 64;
 		}
 	}
 	
+	//output the closest brackets for each entrant, and prints the eliminations given a specific result.
 	public static void outputClosestBrackets()
 	{
 		try {
@@ -283,6 +290,7 @@ public class Guru {
 		//System.out.println("Done getting differences");
 	}
 	
+	//returns the list of match numbers that have different picks in the given brackets. 
 	public static int[] getDifferentMatches(int first, int second)
 	{
 		String[] firstPicks = allPicks.get(first);
@@ -305,6 +313,7 @@ public class Guru {
 		return result;
 	}
 	
+	//gets the possible point difference between two brackets, along with the absolute number of differences and the points to make up.
 	public static int[] getDifferenceScore(int first, int second)
 	{
 		String[] firstPicks = allPicks.get(first);
@@ -328,9 +337,11 @@ public class Guru {
 		return result;
 	}
 	
+	//return if a pick is valid for a given match - i.e can the player still earn points if they picked it. 
+	//recurses for later matches.
 	public static boolean isValid(String pick, int matchNum)
 	{
-		if(matchNum < 64)
+		if(matchNum < 20)
 		{
 			if(matchNum < nextMatch)
 			{
@@ -343,63 +354,51 @@ public class Guru {
 					return true;
 			}
 			return false;
-		}else if(matchNum < 96)
+		}else if(matchNum < 28)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-64)*2) ||
-						isValid(pick, (matchNum-64)*2+1);
+				return isValid(pick, (matchNum-20)*2+4) ||
+						isValid(pick, (matchNum-20)*2+5);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 112)
+		}else if(matchNum < 32)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-96)*2+64) ||
-						isValid(pick, (matchNum-96)*2+65);
+				return isValid(pick, (matchNum-28)*2+20) ||
+						isValid(pick, (matchNum-28)*2+21);
 			else
 				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 120)
+		}else if(matchNum < 34)
 		{
 			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-112)*2+96) ||
-						isValid(pick, (matchNum-112)*2+97);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 124)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-120)*2+112) ||
-						isValid(pick, (matchNum-120)*2+113);
-			else
-				return possibleResults[matchNum][0].equals(pick);
-		}else if(matchNum < 126)
-		{
-			if(possibleResults[matchNum][0].equals(""))
-				return isValid(pick, (matchNum-124)*2+120) ||
-						isValid(pick, (matchNum-124)*2+121);
+				return isValid(pick, (matchNum-32)*2+28) ||
+						isValid(pick, (matchNum-32)*2+29);
 			else
 				return possibleResults[matchNum][0].equals(pick);
 		}else
 		{
-			return isValid(pick, 124)||isValid(pick,125);
+			return isValid(pick, 32)||isValid(pick,33);
 		}
 	}
 	
 
-	
+	//read in the possible results from the .csv file and place them in the results global variable.
 	public static void processPossibleResults(String[] possible)
 	{
-		possibleResults = new String[127][0];
+		possibleResults = new String[35][0];
 		String[] parts;
-		for(int i = 0; i < 127; i++)
+		for(int i = 0; i < 35; i++)
 		{
 			parts = possible[i+1].split("; ");
 			possibleResults[i] = parts;
 		}
 	}
 	
+	//read in the actual results from the .csv file and place them in the results global variable.
+	//sets the *nextMatch* global variable to the first blank result.
 	public static void processResults(String[] picks)
 	{
-		results = new String[127];
+		results = new String[35];
 		for(int i = 1; i < picks.length; i++)
 		{
 			results[i-1] = picks[i];
@@ -408,6 +407,7 @@ public class Guru {
 		}
 	}
 	
+	//read in all picks for a guru contestant from a .csv
 	public static void processPlayer(String[] picks)
 	{
 		String[] playerPicks = new String[picks.length-1];
@@ -420,6 +420,7 @@ public class Guru {
 		allPicks.add(playerPicks);
 	}
 	
+	//calculates the scores for all entrants based on a given set of results. 
 	public static int[] calculateScores(String[] results)
 	{
 		int[] scores = new int[entrants.length];
