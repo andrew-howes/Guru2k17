@@ -234,10 +234,10 @@ public class Guru {
 					{
 						//if(comparisons[i][1] < minscore)
 						//if((scores[i]-scores[player]) + comparisons[i][2] < minscore)
-						if((comparisons[i][2]-(scores[i]-scores[player])) < 10 ||
+						if((comparisons[i][2]-(scores[i]-scores[player])) < 5 ||
 								(scores[player]-scores[i]) + comparisons[i][2] < minscore)
 						{
-							if(minscore > 10)
+							if(minscore > 5)
 								minIDs.clear();
 							//minscore = comparisons[i][1];
 							if(comparisons[i][2]-(scores[i]-scores[player]) < minscore)
