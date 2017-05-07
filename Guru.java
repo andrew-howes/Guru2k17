@@ -18,7 +18,9 @@ public class Guru {
 	static File neighbors; 
 	static int nextMatch;
 	
+	
 	//main execution thread - initializes list of brackets, starts output. 
+	//input argument (optional): how many matches to check (int), defaults to 1
 	public static void main(String[] args) {
 		populateValues();
 		nextMatch = 0;

@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 //import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,12 +18,13 @@ public class GuruElimChecker {
 	static String[] scenarioResults;
 	static String[] results;
 	static String[][] possibleResults;
-	//static File neighbors;
+	static File outFile;
 	static String[] closeEntries;
 	static int nextMatch;
 	static int checkIndex;
 	static int[] wrongMatches;
 	static String winningScenario;
+	static FileWriter writer;
 	
 	
 	public GuruElimChecker(int[] INvalues,String[] INentrants, ArrayList<String[]> INallPicks, String[] INresults, String[][] INpossibleResults,
@@ -45,13 +47,13 @@ public class GuruElimChecker {
 		nextMatch = 0;
 		allPicks = new ArrayList<String[]>();
 		try {
-	        File inFile = new File(args[0]);
+	        File inFile = new File("allbrackets.txt");
 	        String player = "";
-	        if(args.length <= 1)
+//	        if(args.length < 1)
 	        	checkIndex = 0;
-	        else
-	        	player = args[1];
-	        
+//	        else
+//	        	player = args[0];
+//	        
 	        
 	        //neighbors = new File("neighbors.txt");
 	        
@@ -85,83 +87,127 @@ public class GuruElimChecker {
 	        System.out.println("File Read Error: " + e.getMessage());
 	    }
 		//scores = calculateScores(results);
-		System.out.println("Current Match: " + nextMatch);
+		//System.out.println("Current Match: " + nextMatch);
 		
-		if(checkIndex == 0)
-		{
-			checkAllPlayers();
-		}else
-		{
-			checkPlayer();
-		}
+//		if(checkIndex == 0)
+//		{
+//			checkAllPlayers();
+//		}
+//		else
+//		{
+//			checkPlayer();
+//		}
 		
 		//outputClosestBrackets();
-//		if(args.length <= 1)
-//			checkNext(1,"");
-//		else
-//			checkNext(Integer.parseInt(args[1]),"");
+			if(args.length <= 0)
+				checkNext(1,"Spotcheck_");
+			else
+				checkNext(Integer.parseInt(args[0]),"Spotcheck_");
 		/*
 		calculateScenarios("");*/
 	}
 	
+	public static void checkNext(int i, String filename)
+	{
+		String[] possibles = getPossibles(nextMatch);
+		for(String poss : possibles)
+		{
+			possibleResults[nextMatch] = new String[1];
+			possibleResults[nextMatch][0] = poss;
+			results[nextMatch] = poss;
+			scores = calculateScores(results);
+			if(i <= 1)
+			{
+				nextMatch++;
+				outFile = new File(filename+poss+".txt");
+				//outputClosestBrackets();
+				checkAllPlayers();
+				nextMatch--;
+			}else{
+				nextMatch++;
+				checkNext(i-1, filename+poss+"+");
+				nextMatch--;
+			}
+		}
+		possibleResults[nextMatch] = possibles;
+		
+	}
+	
+	
 	public static void checkAllPlayers()
 	{
-		for(int i = 0; i < entrants.length; i++)
-		{
-			checkIndex = i;
-			checkPlayer();
+		try {
+			writer = new FileWriter(outFile);
+			for(int i = 0; i < entrants.length; i++)
+			{
+				checkIndex = i;
+				checkPlayer();
+			}
+			writer.close();
+		}catch(IOException e) {
+			System.out.println("problem with output");
+			//return false;
+			//System.exit(1);
 		}
 	}
 	
 	
 	public static void checkPlayer()
 	{
-		scenarioResults = new String[35];
-		ArrayList<Integer> differences = new ArrayList<Integer>();
-		//set scenarioResults to current result or player's bracket when not impossible
-		for(int i=0; i < 35; i++)
-		{
-			if(i < nextMatch){
-				scenarioResults[i] = results[i];
-			}else{
-				if(isValid(allPicks.get(checkIndex)[i],i)){
-					scenarioResults[i] = allPicks.get(checkIndex)[i];
+		try {
+			
+			scenarioResults = new String[35];
+			ArrayList<Integer> differences = new ArrayList<Integer>();
+			//set scenarioResults to current result or player's bracket when not impossible
+			for(int i=0; i < 35; i++)
+			{
+				if(i < nextMatch){
+					scenarioResults[i] = results[i];
 				}else{
-					scenarioResults[i] = "";
-					differences.add(i);
+					if(isValid(allPicks.get(checkIndex)[i],i)){
+						scenarioResults[i] = allPicks.get(checkIndex)[i];
+					}else{
+						scenarioResults[i] = "";
+						differences.add(i);
+					}
 				}
 			}
-		}
-		if(differences.size() == 0)
-		{
-			if(outputScenarioWinner("any combination+"))
+			if(differences.size() == 0)
 			{
-				System.out.print("\t"+entrants[checkIndex]+" is ALIVE");
+				if(outputScenarioWinner("any combination+"))
+				{
+					writer.write("\t"+entrants[checkIndex]+" is ALIVE");
+				}else{
+					writer.write("\t"+entrants[checkIndex]+" is DEAD");
+				}
 			}else{
-				System.out.print("\t"+entrants[checkIndex]+" is DEAD");
+				//find later round matches to iterate through, where the player is wrong
+				wrongMatches = new int[differences.size()];
+
+
+				for(int i = 0; i < wrongMatches.length; i++)
+				{
+					wrongMatches[i] = differences.get(i).intValue();
+				}
+
+				//recurse through results, checking from left-most first. When you reach the end of the list of matches, check scores
+				boolean isAlive = checkPlayerHelper(0,"");
+
+				//if player is the winner, end execution, else print scenario and winners
+				if(isAlive)
+				{
+					writer.write("\t"+entrants[checkIndex]+" is ALIVE");
+				}else{
+					writer.write("\t"+entrants[checkIndex]+" is DEAD");
+				}
 			}
-		}else{
-			//find later round matches to iterate through, where the player is wrong
-			wrongMatches = new int[differences.size()];
+			writer.write("\n");
 			
-			
-			for(int i = 0; i < wrongMatches.length; i++)
-			{
-				wrongMatches[i] = differences.get(i).intValue();
-			}
-			
-			//recurse through results, checking from left-most first. When you reach the end of the list of matches, check scores
-			boolean isAlive = checkPlayerHelper(0,"");
-			
-			//if player is the winner, end execution, else print scenario and winners
-			if(isAlive)
-			{
-				System.out.print("\t"+entrants[checkIndex]+" is ALIVE");
-			}else{
-				System.out.print("\t"+entrants[checkIndex]+" is DEAD");
-			}
+		}	
+		catch (IOException e) {
+			System.out.println("problem with output");
+			System.exit(1);
 		}
-		System.out.println();
 	}
 	
 	public static boolean checkPlayerHelper(int i, String scenario)
@@ -187,28 +233,34 @@ public class GuruElimChecker {
 	
 	public static boolean outputScenarioWinner(String scene)
 	{
-		boolean result = false;
-		scores = calculateScores(scenarioResults);
-		int maxscore = scores[0];
-		for(int i = 1; i < scores.length; i++)
-		{
-			if(scores[i] > maxscore)
-				maxscore = scores[i];
-		}
-		scene = scene.substring(0,scene.length()-1);
-		System.out.print("Winner(s) for " + scene +": ");
-		for(int j = 0; j < scores.length; j++)
-		{
-			if(scores[j]==maxscore){
-				if(j == checkIndex){
-					result = true;
-					winningScenario = scene;
-				}
-				System.out.print(entrants[j]+" ");
+		try{
+			boolean result = false;
+			scores = calculateScores(scenarioResults);
+			int maxscore = scores[0];
+			for(int i = 1; i < scores.length; i++)
+			{
+				if(scores[i] > maxscore)
+					maxscore = scores[i];
 			}
+			scene = scene.substring(0,scene.length()-1);
+			writer.write("Winner(s) for " + scene +": ");
+			for(int j = 0; j < scores.length; j++)
+			{
+				if(scores[j]==maxscore){
+					if(j == checkIndex){
+						result = true;
+						winningScenario = scene;
+					}
+					writer.write(entrants[j]+" ");
+				}
+			}
+			writer.write("\n");
+			return result;
+		}catch(IOException e) {
+			System.out.println("problem with output");
+			return false;
+			//System.exit(1);
 		}
-		System.out.println();
-		return result;
 	}
 	
 
