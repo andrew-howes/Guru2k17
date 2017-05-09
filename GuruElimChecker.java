@@ -419,7 +419,7 @@ public class GuruElimChecker {
 		}
 	}
 	
-	
+	//checks if a pick is valid for a given match, given the possible results or the given results.
 	public static boolean isPlayerPickValid(String pick, int matchNum)
 	{
 		if(matchNum < 20)
